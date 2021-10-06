@@ -3,15 +3,17 @@ import sys
 import pypandoc
 import bs4
 import yaml
-from shutil import copy
+from shutil import copy, copytree
 
 MD_POSTS_PATH = 'posts'
 HTML_POSTS_PATH = 'dist'
+AUDIO_PATH = 'audio'
 
 def main():
     if not os.path.exists(HTML_POSTS_PATH):
         os.makedirs(HTML_POSTS_PATH)
     copy('style.css', os.path.join(HTML_POSTS_PATH, 'style.css'))
+    copytree(AUDIO_PATH, HTML_POSTS_PATH, dirs_exist_ok=True)
     generate_posts()
     create_home_page()
 
@@ -32,6 +34,9 @@ def generate_posts():
                 add_title_metadata_to_html(html_file_path, metadata_dict['title'])
             else:
                 add_title_metadata_to_html(html_file_path, 'Without Title')
+
+            if 'audio' in metadata_dict:
+                add_audio_to_html(html_file_path, metadata_dict['audio'])
 def create_home_page():
     with open(os.path.join(HTML_POSTS_PATH, 'index.html')) as inf:
         txt = inf.read()
@@ -75,6 +80,20 @@ def add_title_metadata_to_html(html_file_path, title):
         head.append(title_meta)
         with open(os.path.join(html_file_path), 'w') as file:
             file.write(str(soup))
+
+def add_audio_to_html(html_file_path, audio_file_name):
+    with open(html_file_path) as inf:
+        txt = inf.read()
+        soup = bs4.BeautifulSoup(txt, features='html.parser')
+        a = bs4.BeautifulSoup("""
+                                <audio controls preload="none">
+                                <source src="""+audio_file_name+"""
+                                "type="audio/mpeg">
+                                </audio>
+                              """, features='html.parser')
+        soup.find('h1').insert_after(a)
+    with open(html_file_path, 'w') as file:
+        file.write(str(soup))
 
 if __name__ == '__main__':
     main()

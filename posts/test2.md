@@ -1,3 +1,7 @@
+---
+audio: test2.wav
+---
+
 # Test title2
 
 I will write about 3 things:
